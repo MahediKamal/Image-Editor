@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Editor & Collage</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <div class="sidebar">
+    <input type="file" id="fileInput" multiple>
+    <div id="gallery" class="gallery"></div>
+  </div>
+  <div class="editor">
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+      <label>Brightness <input type="range" id="brightness" min="0" max="200" value="100"></label>
+      <label>Contrast <input type="range" id="contrast" min="0" max="200" value="100"></label>
+      <button id="cropBtn">Crop Mode</button>
+      <button id="applyCropBtn">Apply Crop</button>
+      <button id="collageBtn">Collage Mode</button>
+      <button id="downloadBtn">Download</button>
+    </div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
