@@ -9,18 +9,22 @@
 <body>
 <div class="container">
   <div class="sidebar">
-    <input type="file" id="fileInput" multiple>
+    <label class="file-label">Load Images
+      <input type="file" id="fileInput" multiple>
+    </label>
     <div id="gallery" class="gallery"></div>
   </div>
   <div class="editor">
-    <canvas id="canvas"></canvas>
-    <div class="controls">
-      <label>Brightness <input type="range" id="brightness" min="0" max="200" value="100"></label>
-      <label>Contrast <input type="range" id="contrast" min="0" max="200" value="100"></label>
+    <div class="controls-top">
       <button id="cropBtn">Crop Mode</button>
       <button id="applyCropBtn">Apply Crop</button>
       <button id="collageBtn">Collage Mode</button>
       <button id="downloadBtn">Download</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="controls-bottom">
+      <label>Brightness <input type="range" id="brightness" min="0" max="200" value="100"></label>
+      <label>Contrast <input type="range" id="contrast" min="0" max="200" value="100"></label>
     </div>
   </div>
 </div>

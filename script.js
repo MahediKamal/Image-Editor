@@ -25,6 +25,14 @@ let tiles = [];
 let dragTile = null;
 let offsetX = 0, offsetY = 0;
 
+//
+document.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", ()=>{
+        btn.classList.add("clicked");
+        setTimeout(()=> btn.classList.remove("clicked"), 300); // revert after 0.3s
+    });
+});
+
 // --- Load Images ---
 fileInput.addEventListener("change", e => {
     const files = Array.from(e.target.files);
@@ -209,4 +217,23 @@ downloadBtn.addEventListener("click", ()=>{
     link.download = mode==="collage"?"collage.png":"edited_image.png";
     link.href = canvas.toDataURL("image/png",1.0);
     link.click();
+    
+    // Change button color to indicate it was clicked
+    downloadBtn.classList.add("clicked");
+    setTimeout(()=> downloadBtn.classList.remove("clicked"), 1500); // revert after 1.5s
+});
+
+// Function to handle button active state
+function setActiveButton(clickedButton) {
+    document.querySelectorAll("button").forEach(btn => {
+        btn.classList.remove("active"); // remove active from all
+    });
+    clickedButton.classList.add("active"); // add active to clicked button
+}
+
+// Apply to buttons that should have active state
+[cropBtn, applyCropBtn, collageBtn, downloadBtn].forEach(btn => {
+    btn.addEventListener("click", ()=>{
+        setActiveButton(btn);
+    });
 });
