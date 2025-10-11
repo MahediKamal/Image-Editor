@@ -25,14 +25,6 @@ let tiles = [];
 let dragTile = null;
 let offsetX = 0, offsetY = 0;
 
-//
-document.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", ()=>{
-        btn.classList.add("clicked");
-        setTimeout(()=> btn.classList.remove("clicked"), 300); // revert after 0.3s
-    });
-});
-
 // --- Load Images ---
 fileInput.addEventListener("change", e => {
     const files = Array.from(e.target.files);
@@ -61,45 +53,69 @@ function selectImage(img) {
     document.querySelectorAll(".gallery img").forEach(p => p.classList.remove("selected"));
     const preview = [...document.querySelectorAll(".gallery img")].find(p => p.src === img.src);
     if(preview) preview.classList.add("selected");
-    drawImage();
-}
 
-// --- Draw single image ---
-function drawImage() {
-    if(!selectedImage) return;
-    const brightness = brightnessSlider.value;
-    const contrast = contrastSlider.value;
+    // Set canvas size once for this image
     const fullWidth = selectedImage.naturalWidth;
     const fullHeight = selectedImage.naturalHeight;
-    const maxW = window.innerWidth*0.6;
-    const maxH = window.innerHeight*0.7;
-    displayScale = Math.min(maxW/fullWidth, maxH/fullHeight,1);
-    canvas.width = fullWidth*displayScale;
-    canvas.height = fullHeight*displayScale;
-    canvas.style.display="block";
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const maxW = window.innerWidth * 0.6;
+    const maxH = window.innerHeight * 0.7;
+    displayScale = Math.min(maxW / fullWidth, maxH / fullHeight, 1);
+
+    canvas.width = fullWidth * displayScale;
+    canvas.height = fullHeight * displayScale;
+    canvas.style.display = "block";
+
+    drawCanvas();
+}
+
+
+// --- Draw Canvas (works for any mode or no mode) ---
+function drawCanvas() {
+    if (!selectedImage) return;
+
+    const brightness = brightnessSlider.value;
+    const contrast = contrastSlider.value;
+
     ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
-    ctx.drawImage(selectedImage,0,0,canvas.width,canvas.height);
-    // Draw crop rectangle
-    if(cropRect){
-        ctx.strokeStyle="#ff0000";
-        ctx.setLineDash([6]);
-        ctx.lineWidth=2;
-        ctx.strokeRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if(mode === "collage" && tiles.length > 0){
+        // Collage mode
+        tiles.forEach(tile => {
+            ctx.drawImage(tile.img, 0, 0, tile.img.naturalWidth, tile.img.naturalHeight, tile.x, tile.y, tile.w, tile.h);
+            ctx.strokeStyle = "#007bff";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(tile.x, tile.y, tile.w, tile.h);
+        });
+    } else {
+        // Single image (Crop or no mode)
+        ctx.drawImage(selectedImage, 0, 0, canvas.width, canvas.height);
+
+        // Draw crop rectangle if exists
+        if(mode === "crop" && cropRect){
+            ctx.strokeStyle = "#ff0000";
+            ctx.setLineDash([6]);
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+        }
     }
 }
+
+
+
 
 // --- Toggle Modes ---
 cropBtn.addEventListener("click",()=>{
     mode = (mode==="crop")? null : "crop";
     updateModeStyles();
-    if(mode==="crop") drawImage();
+    drawCanvas();
 });
 
 collageBtn.addEventListener("click",()=>{
     mode = (mode==="collage")? null : "collage";
     updateModeStyles();
     if(mode==="collage") initCollage();
+    drawCanvas();
 });
 
 function updateModeStyles(){
@@ -124,7 +140,7 @@ canvas.addEventListener("mousemove", e=>{
     currentX=e.clientX-rect.left;
     currentY=e.clientY-rect.top;
     cropRect={x:Math.min(startX,currentX), y:Math.min(startY,currentY), w:Math.abs(currentX-startX), h:Math.abs(currentY-startY)};
-    drawImage();
+    drawCanvas();
 });
 
 canvas.addEventListener("mouseup", e=>{
@@ -145,16 +161,8 @@ applyCropBtn.addEventListener("click", ()=>{
     tempCanvas.height=cropH;
     tempCanvas.getContext("2d").drawImage(selectedImage,cropX,cropY,cropW,cropH,0,0,cropW,cropH);
     selectedImage.src=tempCanvas.toDataURL();
-    selectedImage.onload=drawImage;
+    selectedImage.onload=drawCanvas;
     cropRect=null;
-});
-
-// --- Brightness/Contrast ---
-brightnessSlider.addEventListener("input",()=>{
-    if(mode==="crop") drawImage();
-});
-contrastSlider.addEventListener("input",()=>{
-    if(mode==="crop") drawImage();
 });
 
 // --- Collage ---
@@ -174,18 +182,7 @@ function initCollage(){
             h: size
         };
     });
-    drawCollage();
-}
-
-// Draw collage
-function drawCollage(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    tiles.forEach(tile=>{
-        ctx.drawImage(tile.img,0,0,tile.img.naturalWidth,tile.img.naturalHeight,tile.x,tile.y,tile.w,tile.h);
-        ctx.strokeStyle="#007bff";
-        ctx.lineWidth=2;
-        ctx.strokeRect(tile.x,tile.y,tile.w,tile.h);
-    });
+    drawCanvas();
 }
 
 // --- Drag/Drop Collage Tiles ---
@@ -205,7 +202,7 @@ canvas.addEventListener("mousemove", e=>{
     const rect=canvas.getBoundingClientRect();
     dragTile.x = e.clientX-rect.left - offsetX;
     dragTile.y = e.clientY-rect.top - offsetY;
-    drawCollage();
+    drawCanvas();
 });
 canvas.addEventListener("mouseup", e=>{
     dragTile=null;
@@ -217,13 +214,9 @@ downloadBtn.addEventListener("click", ()=>{
     link.download = mode==="collage"?"collage.png":"edited_image.png";
     link.href = canvas.toDataURL("image/png",1.0);
     link.click();
-    
-    // Change button color to indicate it was clicked
-    downloadBtn.classList.add("clicked");
-    setTimeout(()=> downloadBtn.classList.remove("clicked"), 1500); // revert after 1.5s
 });
 
-// Function to handle button active state
+// --- Button Active State ---
 function setActiveButton(clickedButton) {
     document.querySelectorAll("button").forEach(btn => {
         btn.classList.remove("active"); // remove active from all
@@ -231,9 +224,14 @@ function setActiveButton(clickedButton) {
     clickedButton.classList.add("active"); // add active to clicked button
 }
 
-// Apply to buttons that should have active state
+// Apply active to all main buttons
 [cropBtn, applyCropBtn, collageBtn, downloadBtn].forEach(btn => {
     btn.addEventListener("click", ()=>{
         setActiveButton(btn);
     });
 });
+
+// --- Brightness/Contrast Dynamic ---
+brightnessSlider.addEventListener("input", drawCanvas);
+contrastSlider.addEventListener("input", drawCanvas);
+

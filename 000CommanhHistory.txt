@@ -1,3 +1,7 @@
 1. Don't change any functionality. Change the position of the crop, apply crop, college, and download button at the top. Make the load image button beautiful. and change the color of the last button to indicate that it was clicked.
 2. Only download button color change when clicked. Do this for all button.
 3. Now, after clicking the turns into a green ad again and comes back to its original color. keep it green until another button is clicked
+4. Brightness and contrast are not working dynamically. 
+5. do Brightness and contrast even if no mode is selected
+6. Brightness and contrast are not always working. only working for college mode.
+7. still only working for college mode. when in crop mode. or no selected it brightness and contarast not working
